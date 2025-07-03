@@ -44,9 +44,7 @@ const verifyToken = async (req, res, next) => {
 // verifying admin middleware
 const verifyAdmin = async (req, res, next) => {
   console.log("hello from admin");
-  const user = req.user;
-  const query = { email: user?.email };
-  const result = await usersCollection.findOne(query);
+  const result = await usersCollection.findOne(req?.user?.email);
   console.log(result?.role);
   if (!result || result?.role !== "admin")
     return res.status(401).send({ message: "unauthorized access!!" });
@@ -75,6 +73,7 @@ async function run() {
     const bookingsCollection = database.collection("bookings");
 
     //!-----------------auth api------------------
+
     // save a user in db
     app.post("/api/register", async (req, res) => {
       try {
@@ -92,9 +91,12 @@ async function run() {
         );
 
         user.password = hashed;
+        user.timestamp = Date.now();
+        user.role = "user";
 
         //   creating user in db
         const result = await usersCollection.insertOne(user);
+        // delete result?.password
 
         res.status(201).send(result);
       } catch (error) {
@@ -121,6 +123,7 @@ async function run() {
           return res.status(401).send({ message: "Invalid password" });
         }
         const jwtPayload = {
+          userId: existingUser?._id,
           email: existingUser?.email,
           role: existingUser?.role,
         };
@@ -150,6 +153,22 @@ async function run() {
       }
     });
 
+    // logout
+    app.get("/api/logout", async (req, res) => {
+      try {
+        res
+          .clearCookie("refreshToken", {
+            maxAge: 0,
+            secure: process.env.NODE_ENV === "production",
+            sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+          })
+          .status(200)
+          .send({ success: true });
+      } catch (err) {
+        res.status(500).send(err);
+      }
+    });
+
     // refresh token
     app.post("/api/refresh-token", async (req, res) => {
       try {
@@ -165,6 +184,7 @@ async function run() {
         }
 
         const jwtPayload = {
+          userId: isExistUser?._id,
           email: isExistUser?.email,
           role: isExistUser?.role,
         };
@@ -194,6 +214,7 @@ async function run() {
       }
     });
 
+    //todo:filter & pagination
     // get all flights by search from db
     app.get("/api/flights/search", async (req, res) => {
       try {
@@ -293,16 +314,92 @@ async function run() {
     );
 
     //!-----------------booking api------------------
-    // get all flight from db
+
+    // get all bookings from db
     app.get("/api/bookings", verifyToken, verifyAdmin, async (req, res) => {
       try {
         const result = await bookingsCollection.find().toArray();
 
         res.status(200).send(result);
       } catch (error) {
-        res.status(500).send({ message: "failed to fetch flight data" });
+        res.status(500).send({ message: "failed to fetch booking data" });
       }
     });
+
+    // get user specific bookings from db //todo
+    app.get("/api/bookings/user/:id", verifyToken, async (req, res) => {
+      try {
+        const { id } = req.params;
+
+        //todo: check
+        if (ObjectId.isValid(req?.user?.userId) !== ObjectId.isValid(id)) {
+          return res.status(403).send({ message: "forbidden access" });
+        }
+        const result = await bookingsCollection
+          .find({ _id: new ObjectId(id) })
+          .toArray();
+
+        res.status(200).send(result);
+      } catch (error) {
+        res
+          .status(500)
+          .send({ message: "failed to fetch specific booking data" });
+      }
+    });
+
+    // create user booking into db
+    app.post("/api/bookings", verifyToken, async (req, res) => {
+      try {
+        const booking = req.body;
+        booking.status = false;
+        booking.timestamp = Date.now();
+
+        const result = await bookingsCollection.insertOne(booking);
+
+        res.status(201).send(result);
+      } catch (error) {
+        res.status(500).send({ message: "failed to create booking data" });
+      }
+    });
+
+    // update user bookings by admin in db
+    app.put("/api/bookings/:id", verifyToken, verifyAdmin, async (req, res) => {
+      try {
+        const { id } = req.params;
+        const status = req.body;
+
+        const result = await bookingsCollection.updateOne(
+          { _id: new ObjectId(id) },
+          { $set: { status, timestamp: Date.now() } }
+        );
+
+        res.status(200).send(result);
+      } catch (error) {
+        res.status(500).send({ message: "failed to update booking data" });
+      }
+    });
+
+    // delete user bookings by admin in db
+    app.delete(
+      "/api/bookings/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        try {
+          const { id } = req.params;
+
+          const result = await bookingsCollection.deleteOne({
+            _id: new ObjectId(id),
+          });
+
+          res.status(200).send(result);
+        } catch (error) {
+          res
+            .status(500)
+            .send({ message: "failed to delete specific booking data" });
+        }
+      }
+    );
 
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
