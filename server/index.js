@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 require("dotenv").config();
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
@@ -25,10 +25,10 @@ const createToken = (jwtPayload, secret, expiresIn) => {
   });
 };
 
-// verifying token
+// verifying token middleware
 const verifyToken = async (req, res, next) => {
   const token = req.headers?.authorization;
-  console.log(token);
+  console.log("verify token", token);
   if (!token) {
     return res.status(401).send({ message: "unauthorized access" });
   }
@@ -39,6 +39,19 @@ const verifyToken = async (req, res, next) => {
     req.user = decoded;
     next();
   });
+};
+
+// verifying admin middleware
+const verifyAdmin = async (req, res, next) => {
+  console.log("hello from admin");
+  const user = req.user;
+  const query = { email: user?.email };
+  const result = await usersCollection.findOne(query);
+  console.log(result?.role);
+  if (!result || result?.role !== "admin")
+    return res.status(401).send({ message: "unauthorized access!!" });
+
+  next();
 };
 
 //mongoDB connection
@@ -55,11 +68,13 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+    // db and db collections
     const database = client.db("flightBookingSystem");
-    const usersCollection = database.collection("user");
+    const usersCollection = database.collection("users");
+    const flightsCollection = database.collection("flights");
+    const bookingsCollection = database.collection("bookings");
 
-    // auth related api
-
+    //!-----------------auth api------------------
     // save a user in db
     app.post("/api/register", async (req, res) => {
       try {
@@ -128,23 +143,23 @@ async function run() {
             secure: process.env.NODE_ENV === "production",
             sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
           })
-          .status(201)
-          .send(result, { accessToken });
+          .status(200)
+          .send({ accessToken });
       } catch (error) {
         res.status(500).send({ message: "failed to fetch a user" });
       }
     });
 
     // refresh token
-    app.post("/refresh-token", async (req, res) => {
+    app.post("/api/refresh-token", async (req, res) => {
       try {
         const { refreshToken } = req.cookies;
 
         const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+        console.log(decoded);
         const { email } = decoded;
-        const query = { email };
 
-        const isExistUser = await usersCollection.findOne(query);
+        const isExistUser = await usersCollection.findOne({ email });
         if (!isExistUser) {
           return res.status(404).send({ message: "Sorry!, User not found" });
         }
@@ -160,9 +175,132 @@ async function run() {
           process.env.JWT_ACCESS_EXPIRES_IN
         );
 
-        res.status(201).send({ accessToken });
+        res.status(200).send({ accessToken });
       } catch (error) {
         res.status(500).send({ message: "failed to fetch  refresh token" });
+      }
+    });
+
+    //!-----------------flight api------------------
+
+    // get all flights from db
+    app.get("/api/flights", async (req, res) => {
+      try {
+        const result = await flightsCollection.find().toArray();
+
+        res.status(200).send(result);
+      } catch (error) {
+        res.status(500).send({ message: "failed to fetch flight data" });
+      }
+    });
+
+    // get all flights by search from db
+    app.get("/api/flights/search", async (req, res) => {
+      try {
+        const { origin, destination, date } = req.query;
+        const result = await flightsCollection
+          .find({ origin, destination, date })
+          .toArray();
+
+        res.status(200).send(result);
+      } catch (error) {
+        res.status(500).send({ message: "failed to fetch flight data" });
+      }
+    });
+
+    // get a flight from db
+    app.get("/api/flights/:id", async (req, res) => {
+      try {
+        const { id } = req.params;
+
+        if (!ObjectId.isValid(id)) {
+          return res.status(400).send({ message: "Invalid flight ID format" });
+        }
+        const result = await flightsCollection.findOne({
+          _id: new ObjectId(id),
+        });
+
+        if (!result) {
+          res.status(404).send({ message: "flight data not found" });
+        }
+
+        res.status(200).send(result);
+      } catch (error) {
+        console.log(error);
+        res
+          .status(500)
+          .send({ message: "failed to fetch a single flight data" });
+      }
+    });
+
+    // create a flight by admin in db
+    app.post("/api/flights", verifyToken, verifyAdmin, async (req, res) => {
+      try {
+        const flight = req.body;
+
+        const result = await flightsCollection.insertOne(flight);
+
+        res.status(201).send(result);
+      } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "failed to create flight data" });
+      }
+    });
+
+    // update a flight by admin in db
+    app.put("/api/flights/:id", verifyToken, verifyAdmin, async (req, res) => {
+      try {
+        const flight = req.body;
+        const { id } = req.params;
+        const query = { _id: new ObjectId(id) };
+        updatedDoc = {
+          $set: { ...flight },
+        };
+        const options = { upsert: true };
+
+        const result = await flightsCollection.updateOne(
+          query,
+          updatedDoc,
+          options
+        );
+
+        res.status(200).send(result);
+      } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: "failed to update flight data" });
+      }
+    });
+
+    // delete a flight by admin in db
+    app.delete(
+      "/api/flights/:id",
+      verifyToken,
+      verifyAdmin,
+      async (req, res) => {
+        try {
+          const { id } = req.params;
+
+          const result = await flightsCollection.deleteOne({
+            _id: new ObjectId(id),
+          });
+
+          res.status(200).send(result);
+        } catch (error) {
+          console.log(error);
+          res.status(500).send({ message: "failed to delete flight data" });
+        }
+      }
+    );
+
+    //!-----------------booking api------------------
+    // get all flight from db
+    app.get("/api/bookings", verifyToken, verifyAdmin, async (req, res) => {
+      try {
+        const result = await bookingsCollection.find().toArray();
+
+        res.status(200).send(result);
+      } catch (error) {
+        res.status(500).send({ message: "failed to fetch flight data" });
       }
     });
 
