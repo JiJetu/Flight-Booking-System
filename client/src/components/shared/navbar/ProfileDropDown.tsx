@@ -1,15 +1,19 @@
 import { Link } from "react-router-dom";
 
 const ProfileDropDown = () => {
-  const user = true;
+  const user = false;
+  const role = user;
 
   const ProfileDropDownItems = (
     <>
       <li>
         <Link to={"/profile"}>Profile</Link>
       </li>
+      <li>
+        <Link to={`/dashboard/${role}`}>Dashboard</Link>
+      </li>
 
-      <li className="mt-2">
+      <li className="mt-2 font-bold">
         {user ? <button>Logout</button> : <Link to={"/login"}>Login</Link>}
       </li>
     </>
