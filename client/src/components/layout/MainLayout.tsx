@@ -1,8 +1,18 @@
+import { Outlet } from "react-router-dom";
+import Navbar from "../shared/navbar/Navbar";
+import Footer from "../shared/footer/Footer";
+
 const MainLayout = () => {
   return (
-    <div>
-      <h1>This is MainLayout component</h1>
-    </div>
+    <>
+      <Navbar />
+
+      <div className="min-h-[calc(100vh-124px)] dark:bg-black">
+        <Outlet />
+      </div>
+
+      <Footer />
+    </>
   );
 };
 
