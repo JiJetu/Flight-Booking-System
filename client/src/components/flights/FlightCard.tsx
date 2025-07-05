@@ -6,15 +6,27 @@ import {
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
 import { TFlight } from "../../constants";
+import cardDefImage from "../../assets/images/banner.gif";
 
 const FlightCard = ({ flight }: { flight: TFlight }) => {
+  const isSoldOut = flight.availableSeats < 1;
+
   return (
-    <div className="rounded-xl overflow-hidden shadow-lg bg-white dark:bg-gray-900 transition hover:scale-[1.01] duration-200 border border-gray-200 dark:border-gray-700">
+    <div
+      className={`rounded-xl overflow-hidden shadow-lg transition duration-200 border 
+        ${
+          isSoldOut
+            ? "bg-gray-200 dark:bg-gray-800 opacity-70 grayscale"
+            : "bg-white dark:bg-gray-900"
+        }
+        border-gray-200 dark:border-gray-700 hover:scale-[1.01]`}
+    >
       <img
-        src={flight.image}
+        src={flight.image ? flight.image : cardDefImage}
         alt={flight.airline}
         className="h-48 w-full object-cover"
       />
+
       <div className="p-4 space-y-2">
         <div className="text-xl font-semibold text-gray-800 dark:text-white">
           {flight.airline}{" "}
@@ -42,14 +54,24 @@ const FlightCard = ({ flight }: { flight: TFlight }) => {
             <span className="font-medium">${flight.price}</span>
           </div>
           <p className="text-sm text-gray-500">
-            Seats Available: {flight.availableSeats}
+            Seats Available:{" "}
+            <span className={isSoldOut ? "text-red-600 font-semibold" : ""}>
+              {flight.availableSeats > 0 ? flight.availableSeats : "Sold Out"}
+            </span>
           </p>
         </div>
 
         <div className="pt-2">
           <Link to={`/flight/${flight._id}`}>
-            <button className="w-full border bg-purple-50 text-purple-700 rounded-md py-2 font-semibold hover:text-purple-800 hover:border-2 transition">
-              Flight Details
+            <button
+              className={`w-full rounded-md py-2 font-semibold transition ${
+                isSoldOut
+                  ? "bg-gray-400 text-white cursor-not-allowed"
+                  : "border bg-purple-50 text-purple-700 hover:text-purple-800 hover:border-2"
+              }`}
+              disabled={isSoldOut}
+            >
+              {isSoldOut ? "Sold Out" : "Flight Details"}
             </button>
           </Link>
         </div>

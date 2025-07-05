@@ -3,16 +3,17 @@ import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
 import { currentUser, logout } from "../../../redux/features/auth/authSlice";
 import { useLogoutMutation } from "../../../redux/features/auth/authApi";
 import avatarImg from "../../../assets/images/placeholder.jpg";
+import { removeBooking } from "../../../redux/features/bookings/bookingSlice";
 
 const ProfileDropDown = () => {
   const user = useAppSelector(currentUser);
   const dispatch = useAppDispatch();
-  const [logoutUser, { data, error }] = useLogoutMutation();
-
-  console.log(data, error);
+  const [logoutUser] = useLogoutMutation();
 
   const handleLogout = async () => {
+    // remove local storage data
     dispatch(logout());
+    dispatch(removeBooking());
 
     await logoutUser(undefined);
   };

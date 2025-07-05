@@ -47,7 +47,7 @@ const BookingConfirm = () => {
     const finalBooking = {
       flightId: bookingFlight?.flightId,
       user: {
-        email: user?.email,
+        userId: user?.userId,
       },
       numberOfSeats: data.numberOfSeats,
       totalPrice: calculatedTotal,
