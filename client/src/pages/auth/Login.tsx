@@ -3,8 +3,9 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useLoginMutation } from "../../redux/features/auth/authApi";
 import { FieldValues } from "react-hook-form";
 import { useAppDispatch } from "../../redux/hooks";
-import { setUser } from "../../redux/features/auth/authSlice";
+import { setUser, TUser } from "../../redux/features/auth/authSlice";
 import { verifyToken } from "../../utils/verifyToken";
+import { toast } from "sonner";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,6 +16,7 @@ const Login = () => {
 
   const handleSubmit = async (e: FieldValues) => {
     e.preventDefault();
+    const tostId = toast.loading("Logging in....");
     const form = e.target;
     const email = form.email.value;
     const password = form.password.value;
@@ -24,21 +26,35 @@ const Login = () => {
       password,
     };
 
-    const res: any = await login(userInfo);
+    try {
+      const res: any = await login(userInfo);
 
-    if (res?.error?.status === 404) {
-      return alert(res?.error?.data?.message);
+      if (res?.error?.status === 404) {
+        return toast.error(res?.error?.data?.message, {
+          id: tostId,
+          duration: 2000,
+        });
+      }
+
+      if (res?.error?.status === 401) {
+        return toast.error(res?.error?.data?.message, {
+          id: tostId,
+          duration: 2000,
+        });
+      }
+
+      // verifying token to get user info
+      const user = verifyToken(res?.data?.accessToken) as TUser;
+      // set user info in local storage
+      dispatch(setUser({ user, token: res?.data?.accessToken }));
+      toast.success("Login successful", {
+        id: tostId,
+        duration: 2000,
+      });
+      navigate(from, { replace: true });
+    } catch (error) {
+      toast.error("Something went wrong", { id: tostId, duration: 2000 });
     }
-
-    if (res?.error?.status === 401) {
-      return alert(res?.error?.data?.message);
-    }
-
-    // verifying token to get user info
-    const user = verifyToken(res?.data?.accessToken);
-    // set user info in local storage
-    dispatch(setUser({ user, token: res?.data?.accessToken }));
-    navigate(from, { replace: true });
   };
 
   return (

@@ -3,6 +3,8 @@ import MainLayout from "../components/layout/MainLayout";
 import Home from "../pages/home/Home";
 import Login from "../pages/auth/Login";
 import Registration from "../pages/auth/Registration";
+import AllFlights from "../pages/allFlights/AllFlights";
+import ProtectedRoute from "../components/layout/ProtectedRoute";
 
 const router = createBrowserRouter([
   {
@@ -12,6 +14,14 @@ const router = createBrowserRouter([
       {
         index: true,
         element: <Home />,
+      },
+      {
+        path: "/all-flights",
+        element: (
+          <ProtectedRoute>
+            <AllFlights />,
+          </ProtectedRoute>
+        ),
       },
     ],
   },

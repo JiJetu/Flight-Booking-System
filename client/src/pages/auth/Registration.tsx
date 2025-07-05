@@ -5,34 +5,44 @@ import { useRegisterMutation } from "../../redux/features/auth/authApi";
 import { useState } from "react";
 import { FieldValues } from "react-hook-form";
 import { imageUpload } from "../../utils/createImageUrl";
+import { toast } from "sonner";
 
 const Registration = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState<boolean>(false);
-  const [register, {isLoading }] = useRegisterMutation();
+  const [register, { isLoading }] = useRegisterMutation();
 
   const handleSubmit = async (e: FieldValues) => {
-    setLoading(true);
     e.preventDefault();
+    setLoading(true);
+    const tostId = toast.loading("Registering....");
     const form = e.target;
     const name = form.name.value;
     const email = form.email.value;
     const password = form.password.value;
     const image = form.image.files[0];
 
-    // uploading image in imgBB to get image URL
-    const image_url = await imageUpload(image);
-    setLoading(false);
+    try {
+      // uploading image in imgBB to get image URL
+      const image_url = await imageUpload(image);
+      setLoading(false);
 
-    const userInfo = {
-      name,
-      email,
-      password,
-      image: image_url,
-    };
+      const userInfo = {
+        name,
+        email,
+        password,
+        image: image_url,
+      };
 
-    await register(userInfo);
-    navigate("/login");
+      await register(userInfo);
+      toast.success("User created successfully", {
+        id: tostId,
+        duration: 2000,
+      });
+      navigate("/login");
+    } catch (error) {
+      toast.error("Something went wrong", { id: tostId, duration: 2000 });
+    }
   };
 
   return (

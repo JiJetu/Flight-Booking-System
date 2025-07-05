@@ -4,9 +4,14 @@ import { Link, NavLink } from "react-router-dom";
 import useTheme, { themItem } from "../../../hooks/useTheme";
 import { BsMoonStarsFill } from "react-icons/bs";
 import ProfileDropDown from "./ProfileDropDown";
+import { useAppSelector } from "../../../redux/hooks";
+import { currentUser } from "../../../redux/features/auth/authSlice";
+import { Button } from "antd";
 
 const Navbar = () => {
   const { handleMode, mode } = useTheme();
+  const user = useAppSelector(currentUser);
+
   const navItems = (
     <>
       <li>
@@ -74,7 +79,14 @@ const Navbar = () => {
             )}
           </button>
 
-          <ProfileDropDown />
+          {/* profile, login */}
+          {user ? (
+            <ProfileDropDown />
+          ) : (
+            <Link to={"/login"}>
+              <Button>Login</Button>
+            </Link>
+          )}
         </div>
       </div>
     </div>

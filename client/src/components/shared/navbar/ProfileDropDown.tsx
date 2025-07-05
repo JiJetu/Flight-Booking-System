@@ -1,8 +1,20 @@
 import { Link } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
+import { currentUser, logout } from "../../../redux/features/auth/authSlice";
+import { useLogoutMutation } from "../../../redux/features/auth/authApi";
 
 const ProfileDropDown = () => {
-  const user = false;
-  const role = user;
+  const user = useAppSelector(currentUser);
+  const dispatch = useAppDispatch();
+  const [logoutUser, { data, error }] = useLogoutMutation();
+
+  console.log(data, error);
+
+  const handleLogout = async () => {
+    dispatch(logout());
+
+    await logoutUser(undefined);
+  };
 
   const ProfileDropDownItems = (
     <>
@@ -10,11 +22,11 @@ const ProfileDropDown = () => {
         <Link to={"/profile"}>Profile</Link>
       </li>
       <li>
-        <Link to={`/dashboard/${role}`}>Dashboard</Link>
+        <Link to={`/dashboard/${user?.role}`}>Dashboard</Link>
       </li>
 
       <li className="mt-2 font-bold">
-        {user ? <button>Logout</button> : <Link to={"/login"}>Login</Link>}
+        <button onClick={handleLogout}>Logout</button>
       </li>
     </>
   );
