@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "../../../redux/hooks";
 import { currentUser, logout } from "../../../redux/features/auth/authSlice";
 import { useLogoutMutation } from "../../../redux/features/auth/authApi";
+import avatarImg from "../../../assets/images/placeholder.jpg";
 
 const ProfileDropDown = () => {
   const user = useAppSelector(currentUser);
@@ -39,8 +40,9 @@ const ProfileDropDown = () => {
       >
         <div className="w-10 rounded-full">
           <img
-            alt="Tailwind CSS Navbar component"
-            src="https://img.daisyui.com/images/stock/photo-1534528741775-53994a69daeb.webp"
+            alt="User image"
+            referrerPolicy="no-referrer"
+            src={user && user.image ? user.image : avatarImg}
           />
         </div>
       </div>

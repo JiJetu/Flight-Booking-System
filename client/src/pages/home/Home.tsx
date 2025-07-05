@@ -1,8 +1,13 @@
+import { Helmet } from "react-helmet-async";
+
 const Home = () => {
   return (
-    <div>
+    <>
+      <Helmet>
+        <title>Flights</title>
+      </Helmet>
       <h1>This is Home component</h1>
-    </div>
+    </>
   );
 };
 

@@ -26,6 +26,18 @@ const Navbar = () => {
           Home
         </NavLink>
       </li>
+      <li>
+        <NavLink
+          className={({ isActive }) =>
+            isActive
+              ? "p-2 border-b border-b-purple-600 text-purple-500"
+              : "p-2"
+          }
+          to={"/all-flights"}
+        >
+          Flights
+        </NavLink>
+      </li>
     </>
   );
 
@@ -65,7 +77,9 @@ const Navbar = () => {
           </Link>
         </div>
         <div className="navbar-center hidden lg:flex">
-          <ul className="menu menu-horizontal px-1">{navItems}</ul>
+          <ul className="menu menu-horizontal px-1 gap-2 font-semibold font-lato">
+            {navItems}
+          </ul>
         </div>
         <div className="navbar-end flex items-center gap-3 md:gap-5">
           <button

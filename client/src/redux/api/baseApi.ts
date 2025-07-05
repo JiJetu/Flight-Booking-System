@@ -7,6 +7,7 @@ import {
   DefinitionType,
   FetchArgs,
 } from "@reduxjs/toolkit/query";
+import axios from "axios";
 
 const baseQuery = fetchBaseQuery({
   baseUrl: `${import.meta.env.VITE_API_URL}/api`,
@@ -31,16 +32,15 @@ const baseQueryWithRefreshToken: BaseQueryFn<
   if (result.error?.status === 401) {
     console.log("sending refresh token");
     // fetch refresh token
-    const res = await fetch(
+    const res = await axios.post(
       `${import.meta.env.VITE_API_URL}/api/refresh-token`,
+      {},
       {
-        method: "POST",
-        credentials: "include",
+        withCredentials: true,
       }
     );
 
-    // refresh token from server
-    const data = await res.json();
+    const data = res.data;
     console.log({ data });
 
     if (data?.accessToken) {
