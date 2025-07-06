@@ -24,7 +24,7 @@ const ProfileDropDown = () => {
         <Link to={"/profile"}>Profile</Link>
       </li>
       <li>
-        <Link to={`/dashboard/${user?.role}`}>Dashboard</Link>
+        <Link to={"/dashboard"}>Dashboard</Link>
       </li>
 
       <li className="mt-2 font-bold">

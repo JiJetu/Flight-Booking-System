@@ -1,6 +1,6 @@
 import { ReactNode } from "react";
-import { useAppSelector } from "../../redux/hooks";
-import { currentUserToken } from "../../redux/features/auth/authSlice";
+import { useAppSelector } from "../redux/hooks";
+import { currentUserToken } from "../redux/features/auth/authSlice";
 import { Navigate, useLocation } from "react-router-dom";
 
 const ProtectedRoute = ({ children }: { children: ReactNode }) => {

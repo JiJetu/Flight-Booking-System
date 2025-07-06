@@ -70,7 +70,7 @@ const Registration = () => {
             <h1 className="my-3 text-4xl font-bold">Sign Up</h1>
             <p className="text-sm text-gray-400 flex items-center justify-center gap-2">
               Welcome to
-              <span className="flex items-center gap-1 text-purple-600 dark:text-purple-400 font-mono">
+              <span className="flex items-center gap-1 text-purple-600 dark:text-purple-400 font-mono font-bold">
                 <MdOutlineFlightTakeoff /> Flights
               </span>
             </p>

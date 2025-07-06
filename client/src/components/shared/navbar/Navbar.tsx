@@ -6,7 +6,6 @@ import { BsMoonStarsFill } from "react-icons/bs";
 import ProfileDropDown from "./ProfileDropDown";
 import { useAppSelector } from "../../../redux/hooks";
 import { currentUser } from "../../../redux/features/auth/authSlice";
-import { Button } from "antd";
 
 const Navbar = () => {
   const { handleMode, mode } = useTheme();
@@ -19,7 +18,7 @@ const Navbar = () => {
           className={({ isActive }) =>
             isActive
               ? "p-2 border-b border-b-purple-600 text-purple-500"
-              : "p-2"
+              : "p-2 text-purple-500"
           }
           to={"/"}
         >
@@ -31,7 +30,7 @@ const Navbar = () => {
           className={({ isActive }) =>
             isActive
               ? "p-2 border-b border-b-purple-600 text-purple-500"
-              : "p-2"
+              : "p-2 text-purple-500"
           }
           to={"/all-flights"}
         >
@@ -70,7 +69,7 @@ const Navbar = () => {
             </ul>
           </div>
           <Link
-            className="flex items-center gap-2 text-xl text-purple-600 dark:text-purple-400 font-mono"
+            className="flex items-center gap-2 text-xl text-purple-600 dark:text-purple-400 font-bold font-mono"
             to={"/"}
           >
             <MdOutlineFlightTakeoff /> Flights
@@ -98,7 +97,9 @@ const Navbar = () => {
             <ProfileDropDown />
           ) : (
             <Link to={"/login"}>
-              <Button>Login</Button>
+              <button className="px-4 py-1 border border-purple-200 text-sm rounded-md hover:border-purple-500">
+                Login
+              </button>
             </Link>
           )}
         </div>
