@@ -45,7 +45,15 @@ const Registration = () => {
         image: image_url,
       };
 
-      await registerUser(userInfo);
+      const res: any = await registerUser(userInfo);
+
+      if (res?.error?.status === 409) {
+        toast.error(res?.error?.data?.message, {
+          id: toastId,
+          duration: 2000,
+        });
+        return navigate("/login");
+      }
       toast.success("User created successfully", {
         id: toastId,
         duration: 2000,
@@ -86,7 +94,7 @@ const Registration = () => {
                   id="name"
                   {...register("name", { required: "Name is required" })}
                   placeholder="Enter Your Name Here"
-                  className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-rose-500 bg-gray-200 text-gray-900"
+                  className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-purple-500 bg-gray-200 text-gray-900"
                 />
                 {errors.name && (
                   <p className="text-red-500 text-xs mt-1">
@@ -121,7 +129,7 @@ const Registration = () => {
                   id="email"
                   {...register("email", { required: "Email is required" })}
                   placeholder="Enter Your Email Here"
-                  className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-rose-500 bg-gray-200 text-gray-900"
+                  className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-purple-500 bg-gray-200 text-gray-900"
                 />
                 {errors.email && (
                   <p className="text-red-500 text-xs mt-1">
@@ -142,7 +150,7 @@ const Registration = () => {
                     required: "Password is required",
                   })}
                   placeholder="*******"
-                  className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-rose-500 bg-gray-200 text-gray-900"
+                  className="w-full px-3 py-2 border rounded-md border-gray-300 focus:outline-purple-500 bg-gray-200 text-gray-900"
                 />
                 {errors.password && (
                   <p className="text-red-500 text-xs mt-1">
@@ -156,7 +164,7 @@ const Registration = () => {
               <button
                 disabled={loading || isLoading}
                 type="submit"
-                className="bg-rose-500 w-full rounded-md py-3 text-white"
+                className="bg-purple-500 w-full rounded-md py-3 text-white"
               >
                 {isLoading || loading ? (
                   <TbFidgetSpinner className="animate-spin m-auto" />
@@ -171,7 +179,7 @@ const Registration = () => {
             Already have an account?{" "}
             <Link
               to="/login"
-              className="hover:underline hover:text-rose-500 text-gray-600"
+              className="hover:underline hover:text-purple-500 text-gray-600"
             >
               Login
             </Link>

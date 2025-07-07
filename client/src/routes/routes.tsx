@@ -10,6 +10,11 @@ import BookingConfirm from "../pages/bookingConfirm/BookingConfirm";
 import DashboardLayout from "../layout/DashboardLayout";
 import Statistics from "../pages/dashboard/statistics/Statistics";
 import AddFlight from "../pages/dashboard/admin/AddFlight";
+import MyBookings from "../pages/dashboard/user/MyBookings";
+import AdminRoute from "./AdminRoute";
+import ManageBookings from "../pages/dashboard/admin/ManageBookings";
+import MyListings from "../pages/dashboard/admin/MyListings";
+import ManageUsers from "../pages/dashboard/admin/ManageUsers";
 
 const router = createBrowserRouter([
   {
@@ -57,10 +62,50 @@ const router = createBrowserRouter([
         ),
       },
       {
+        path: "manage-users",
+        element: (
+          <ProtectedRoute>
+            <AdminRoute>
+              <ManageUsers />
+            </AdminRoute>
+          </ProtectedRoute>
+        ),
+      },
+      {
         path: "add-flight",
         element: (
           <ProtectedRoute>
-            <AddFlight />
+            <AdminRoute>
+              <AddFlight />
+            </AdminRoute>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "my-listings",
+        element: (
+          <ProtectedRoute>
+            <AdminRoute>
+              <MyListings />
+            </AdminRoute>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "manage-bookings",
+        element: (
+          <ProtectedRoute>
+            <AdminRoute>
+              <ManageBookings />
+            </AdminRoute>
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "my-bookings",
+        element: (
+          <ProtectedRoute>
+            <MyBookings />
           </ProtectedRoute>
         ),
       },

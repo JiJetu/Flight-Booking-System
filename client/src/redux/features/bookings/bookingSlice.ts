@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { RootState } from "../../store";
 
-export type TFlight = {
+export type TLocalFlight = {
   flightId: string;
   airline: string;
   dateTime: string;
@@ -11,7 +11,7 @@ export type TFlight = {
 };
 
 type TBookingState = {
-  flight: null | TFlight;
+  flight: null | TLocalFlight;
 };
 
 const initialState: TBookingState = {

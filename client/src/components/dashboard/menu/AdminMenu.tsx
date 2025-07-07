@@ -1,18 +1,22 @@
-import { BsFillHouseAddFill } from "react-icons/bs";
 import MenuItem from "./MenuItem";
-import { MdHomeWork, MdOutlineManageHistory } from "react-icons/md";
+import { MdOutlineFlight, MdOutlineManageHistory } from "react-icons/md";
 import { FaUserCog } from "react-icons/fa";
+import { PiSquareHalfLight } from "react-icons/pi";
 
 const AdminMenu = () => {
   return (
     <>
       <MenuItem icon={FaUserCog} label="Manage Users" address="manage-users" />
       <MenuItem
-        icon={BsFillHouseAddFill}
+        icon={MdOutlineFlight}
         label="Add Flight"
-        address="add-room"
+        address="add-flight"
       />
-      <MenuItem icon={MdHomeWork} label="My Listings" address="my-listings" />
+      <MenuItem
+        icon={PiSquareHalfLight}
+        label="My Listings"
+        address="my-listings"
+      />
       <MenuItem
         icon={MdOutlineManageHistory}
         label="Manage Bookings"

@@ -16,9 +16,9 @@ const Navbar = () => {
       <li>
         <NavLink
           className={({ isActive }) =>
-            isActive
-              ? "p-2 border-b border-b-purple-600 text-purple-500"
-              : "p-2 text-purple-500"
+            `p-2 text-purple-500 ${
+              isActive && "p-2 border-b border-b-purple-600 text-purple-500"
+            }`
           }
           to={"/"}
         >
@@ -28,9 +28,9 @@ const Navbar = () => {
       <li>
         <NavLink
           className={({ isActive }) =>
-            isActive
-              ? "p-2 border-b border-b-purple-600 text-purple-500"
-              : "p-2 text-purple-500"
+            `p-2 text-purple-500 ${
+              isActive && "p-2 border-b border-b-purple-600 text-purple-500"
+            }`
           }
           to={"/all-flights"}
         >

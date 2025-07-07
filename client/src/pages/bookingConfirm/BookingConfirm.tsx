@@ -54,13 +54,15 @@ const BookingConfirm = () => {
     };
 
     try {
-      await bookAFlight(finalBooking);
+      const res = await bookAFlight(finalBooking);
+
+      console.log(res);
 
       toast.success("Please! Wait for Admin Approver", {
         id: toastId,
         duration: 2000,
       });
-      navigate(`/${user?.role}/my-bookings`);
+      navigate(`/dashboard/my-bookings`);
     } catch (error) {
       toast.error("Something went wrong", { id: toastId, duration: 2000 });
     }

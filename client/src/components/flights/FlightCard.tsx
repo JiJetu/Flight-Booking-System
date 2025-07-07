@@ -5,11 +5,22 @@ import {
   FaMoneyBillWave,
 } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import { TFlight } from "../../constants";
+import { TFlight } from "../../type";
 import cardDefImage from "../../assets/images/banner.gif";
 
 const FlightCard = ({ flight }: { flight: TFlight }) => {
   const isSoldOut = flight.availableSeats < 1;
+
+  const departureDate = new Date(flight?.departureTime).toLocaleDateString();
+  const departureTime = new Date(flight?.departureTime).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+  const arrivalDate = new Date(flight?.arrivalTime).toLocaleDateString();
+  const arrivalTime = new Date(flight?.arrivalTime).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 
   return (
     <div
@@ -45,8 +56,9 @@ const FlightCard = ({ flight }: { flight: TFlight }) => {
           <div className="flex items-center gap-2">
             <FaClock className="text-yellow-600" />
             <span>
-              {flight.date} — {flight.departureTime} → {flight.arrivalTime} (
-              {flight.duration})
+              {departureDate} | {departureTime} →{" "}
+              {departureDate === arrivalDate ? "" : `${arrivalDate} |`}{" "}
+              {arrivalTime} ({flight?.duration})
             </span>
           </div>
           <div className="flex items-center gap-2">

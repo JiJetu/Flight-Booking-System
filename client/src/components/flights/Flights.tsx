@@ -1,4 +1,4 @@
-import { TFlight } from "../../constants";
+import { TFlight } from "../../type";
 import { useGetAllFlightsQuery } from "../../redux/features/flights/flightApi";
 import Heading from "../shared/heading/Heading";
 import Loading from "../shared/loading/Loading";
