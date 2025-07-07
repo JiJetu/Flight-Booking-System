@@ -15,6 +15,7 @@ import AdminRoute from "./AdminRoute";
 import ManageBookings from "../pages/dashboard/admin/ManageBookings";
 import MyListings from "../pages/dashboard/admin/MyListings";
 import ManageUsers from "../pages/dashboard/admin/ManageUsers";
+import Profile from "../pages/dashboard/profile/Profile";
 
 const router = createBrowserRouter([
   {
@@ -58,6 +59,14 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Statistics />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <Profile />
           </ProtectedRoute>
         ),
       },

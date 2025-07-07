@@ -10,8 +10,8 @@ const bookingApi = baseApi.injectEndpoints({
       providesTags: ["Bookings"],
     }),
     getMyBookings: builder.query({
-      query: () => ({
-        url: `/flights`,
+      query: (id) => ({
+        url: `/bookings/user/${id}`,
         method: "GET",
       }),
       providesTags: ["Bookings"],
@@ -25,10 +25,11 @@ const bookingApi = baseApi.injectEndpoints({
       invalidatesTags: ["Bookings"],
     }),
     updateBookingStatus: builder.mutation({
-      query: ({ id, status }: { id: string; status: string }) => {
-        console.log(status);
-        return { url: `/bookings/${id}`, method: "PUT", body: { status } };
-      },
+      query: ({ id, status }: { id: string; status: string }) => ({
+        url: `/bookings/${id}`,
+        method: "PUT",
+        body: { status },
+      }),
       invalidatesTags: ["Bookings"],
     }),
     deleteBookingS: builder.mutation({
