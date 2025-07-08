@@ -11,7 +11,7 @@ import { calculatePagination } from "../../utils/calculatePagination";
 import { TFlight } from "../../type";
 import Pagination from "../shared/pagination/Pagination";
 
-const ITEMS_PER_PAGE = 1;
+const ITEMS_PER_PAGE = 6;
 
 const Flights = () => {
   const [filters, setFilters] = useState<Record<string, string | number>>({});

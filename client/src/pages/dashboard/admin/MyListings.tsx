@@ -3,22 +3,32 @@ import {
   useDeleteFlightMutation,
   useGetAllFlightsQuery,
 } from "../../../redux/features/flights/flightApi";
-import { TFlight } from "../../../type";
 import Loading from "../../../components/shared/loading/Loading";
 import { toast } from "sonner";
 import FlightDataRow from "../../../components/tableRow/FlightDataRow";
+import { useState } from "react";
+import Pagination from "../../../components/shared/pagination/Pagination";
+
+const ITEMS_PER_PAGE = 5;
 
 const MyListings = () => {
-  const { data, isLoading } = useGetAllFlightsQuery(undefined);
+  const [page, setPage] = useState(1);
+
+  const { data, isLoading } = useGetAllFlightsQuery({
+    page,
+    limit: ITEMS_PER_PAGE,
+  });
   const [deleteFlight] = useDeleteFlightMutation();
 
-  const flights = (data || []) as TFlight[];
+  const flights = data?.flights || [];
+  const total = data?.total || 0;
+  const totalPages = Math.ceil(total / ITEMS_PER_PAGE);
 
   const handleDelete = async (id: string) => {
     const toastId = toast.loading("Deleting Flight...");
 
     try {
-      await deleteFlight(id);
+      await deleteFlight(id).unwrap();
       toast.success("Flight deleted successfully!", {
         id: toastId,
         duration: 2000,
@@ -30,6 +40,7 @@ const MyListings = () => {
       });
     }
   };
+
   if (isLoading) return <Loading />;
 
   return (
@@ -74,9 +85,8 @@ const MyListings = () => {
                     </th>
                   </tr>
                 </thead>
-
                 <tbody>
-                  {flights?.map((flight) => (
+                  {flights.map((flight) => (
                     <FlightDataRow
                       key={flight._id}
                       flight={flight}
@@ -86,6 +96,13 @@ const MyListings = () => {
                 </tbody>
               </table>
             </div>
+
+            <Pagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              textColor="text-black"
+            />
           </div>
         </div>
       </div>
