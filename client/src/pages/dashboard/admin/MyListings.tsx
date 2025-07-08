@@ -97,12 +97,14 @@ const MyListings = () => {
               </table>
             </div>
 
-            <Pagination
-              currentPage={page}
-              totalPages={totalPages}
-              onPageChange={setPage}
-              textColor="text-black"
-            />
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                textColor="text-black"
+              />
+            )}
           </div>
         </div>
       </div>

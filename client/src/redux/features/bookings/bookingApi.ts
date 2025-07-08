@@ -2,17 +2,19 @@ import { baseApi } from "../../api/baseApi";
 
 const bookingApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAllBookings: builder.query({
-      query: () => ({
-        url: `/bookings`,
+    getMyBookings: builder.query({
+      query: ({ id, page = 1, limit = 10 }) => ({
+        url: `/bookings/user/${id}`,
         method: "GET",
+        params: { page, limit },
       }),
       providesTags: ["Bookings"],
     }),
-    getMyBookings: builder.query({
-      query: (id) => ({
-        url: `/bookings/user/${id}`,
+    getAllBookings: builder.query({
+      query: ({ page = 1, limit = 10 }) => ({
+        url: `/bookings`,
         method: "GET",
+        params: { page, limit },
       }),
       providesTags: ["Bookings"],
     }),

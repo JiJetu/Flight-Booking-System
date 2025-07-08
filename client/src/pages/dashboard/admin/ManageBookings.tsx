@@ -10,26 +10,28 @@ import Loading from "../../../components/shared/loading/Loading";
 import DeleteFlightModal from "../../../components/modal/DeleteFlightModal";
 import { TBooking } from "../../../type";
 import { TbTrash } from "react-icons/tb";
+import Pagination from "../../../components/shared/pagination/Pagination";
 
 const ManageBookings = () => {
-  const { data, isLoading } = useGetAllBookingsQuery(undefined);
+  const [page, setPage] = useState(1);
+  const limit = 5;
+
+  const { data, isLoading } = useGetAllBookingsQuery({ page, limit });
   const [deleteBooking] = useDeleteBookingSMutation();
   const [updateBookingStatus] = useUpdateBookingStatusMutation();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(false);
 
-  const bookings = data || [];
+  const bookings = data?.bookings || [];
+  const totalPages = Math.ceil((data?.total || 0) / limit);
 
   const handleDelete = async (id: string) => {
     const toastId = toast.loading("Deleting Booking...");
     try {
       await deleteBooking(id);
-      toast.success("Booking deleted successfully", {
-        id: toastId,
-        duration: 2000,
-      });
+      toast.success("Booking deleted successfully", { id: toastId });
     } catch (error) {
-      toast.error("Failed to delete booking", { id: toastId, duration: 2000 });
+      toast.error("Failed to delete booking", { id: toastId });
     }
   };
 
@@ -39,25 +41,12 @@ const ManageBookings = () => {
   ) => {
     const toastId = toast.loading("Updating status...");
     try {
-      const updatedDoc = {
-        id,
-        status: newStatus,
-      };
-      console.log(updatedDoc);
-      const res = await updateBookingStatus(updatedDoc);
-
-      console.log(res);
-      toast.success(
-        `Booking ${
-          newStatus === "Confirm" ? "confirmed" : "cancelled"
-        } successfully`,
-        {
-          id: toastId,
-          duration: 2000,
-        }
-      );
+      await updateBookingStatus({ id, status: newStatus });
+      toast.success(`Booking ${newStatus.toLowerCase()}ed successfully`, {
+        id: toastId,
+      });
     } catch (error) {
-      toast.error("Failed to update status", { id: toastId, duration: 2000 });
+      toast.error("Failed to update status", { id: toastId });
     }
   };
 
@@ -101,7 +90,7 @@ const ManageBookings = () => {
                 </thead>
 
                 <tbody className="text-black">
-                  {bookings?.map((booking: TBooking) => (
+                  {bookings.map((booking: TBooking) => (
                     <tr key={booking._id}>
                       <td className="px-5 py-5 border-b bg-white text-sm">
                         {booking._id}
@@ -148,7 +137,7 @@ const ManageBookings = () => {
 
                       <td className="px-5 py-5 bg-white text-sm">
                         {booking.status === "Pending" && (
-                          <>
+                          <div className="flex gap-2 mb-2">
                             <button
                               title="Confirm Booking"
                               onClick={() =>
@@ -167,7 +156,7 @@ const ManageBookings = () => {
                             >
                               Cancel
                             </button>
-                          </>
+                          </div>
                         )}
 
                         <div className="flex justify-center items-center pt-2">
@@ -188,6 +177,15 @@ const ManageBookings = () => {
                 </tbody>
               </table>
             </div>
+
+            {totalPages > 1 && (
+              <Pagination
+                currentPage={page}
+                totalPages={totalPages}
+                onPageChange={setPage}
+                textColor="text-black"
+              />
+            )}
           </div>
         </div>
       </div>

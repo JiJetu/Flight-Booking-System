@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { useState } from "react";
 import { useAppSelector } from "../../../redux/hooks";
 import { currentUser } from "../../../redux/features/auth/authSlice";
 import {
@@ -8,13 +9,22 @@ import {
 import { TBooking } from "../../../type";
 import Loading from "../../../components/shared/loading/Loading";
 import { toast } from "sonner";
+import Pagination from "../../../components/shared/pagination/Pagination";
 
 const MyBookings = () => {
   const user = useAppSelector(currentUser);
-  const { data, isLoading } = useGetMyBookingsQuery(user?.userId);
+  const [page, setPage] = useState(1);
+  const limit = 5;
+
+  const { data, isLoading } = useGetMyBookingsQuery({
+    id: user?.userId,
+    page,
+    limit,
+  });
   const [updateBookingStatus] = useUpdateBookingStatusMutation();
 
-  const bookings = data || [];
+  const bookings = data?.bookings || [];
+  const totalPages = Math.ceil((data?.total || 0) / limit);
 
   const handleCancel = async (id: string) => {
     const toastId = toast.loading("Cancelling booking...");
@@ -96,6 +106,15 @@ const MyBookings = () => {
               </tbody>
             </table>
           </div>
+        )}
+
+        {totalPages > 1 && (
+          <Pagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            textColor="text-black"
+          />
         )}
       </div>
     </>

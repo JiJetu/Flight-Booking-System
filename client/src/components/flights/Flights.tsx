@@ -59,11 +59,13 @@ const Flights = () => {
             ))}
           </div>
 
-          <Pagination
-            currentPage={page}
-            totalPages={pages.length}
-            onPageChange={handlePageChange}
-          />
+          {pages.length > 1 && (
+            <Pagination
+              currentPage={page}
+              totalPages={pages.length}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       ) : (
         <div className="min-h-[300px] flex items-center justify-center">
