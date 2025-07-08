@@ -5,6 +5,7 @@ require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const nodemailer = require("nodemailer");
 const bcrypt = require("bcrypt");
 const port = process.env.PORT || 3000;
 
@@ -18,6 +19,43 @@ app.use(cors(corsOptions));
 app.use(express.json());
 app.use(cookieParser());
 
+// send email
+const sendEmail = (emailAddress, emailData) => {
+  const transporter = nodemailer.createTransport({
+    service: "gmail",
+    host: "smtp.gmail.com",
+    port: 587,
+    secure: false, // Use `true` for port 465, `false` for all other ports
+    auth: {
+      user: process.env.TRANSPORTER_EMAIL,
+      pass: process.env.TRANSPORTER_PASSWORD,
+    },
+  });
+
+  // verify connection configuration
+  transporter.verify(function (error, success) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Server is ready to take our messages");
+    }
+  });
+  const mailBody = {
+    from: `"StayVista" <${process.env.TRANSPORTER_EMAIL}>`, // sender address
+    to: emailAddress, // list of receivers
+    subject: emailData.subject, // Subject line
+    html: emailData.message, // html body
+  };
+
+  transporter.sendMail(mailBody, (error, info) => {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email Sent: " + info.response);
+    }
+  });
+};
+
 // creating token
 const createToken = (jwtPayload, secret, expiresIn) => {
   return jwt.sign(jwtPayload, secret, {
@@ -28,7 +66,6 @@ const createToken = (jwtPayload, secret, expiresIn) => {
 // verifying token middleware
 const verifyToken = async (req, res, next) => {
   const token = req.headers?.authorization;
-  console.log("verify token", token);
   if (!token) {
     return res.status(401).send({ message: "unauthorized access" });
   }
@@ -39,17 +76,6 @@ const verifyToken = async (req, res, next) => {
     req.user = decoded;
     next();
   });
-};
-
-// verifying admin middleware
-const verifyAdmin = async (req, res, next) => {
-  console.log("hello from admin");
-  const result = await usersCollection.findOne(req?.user?.email);
-  console.log(result?.role);
-  if (!result || result?.role !== "admin")
-    return res.status(401).send({ message: "unauthorized access!!" });
-
-  next();
 };
 
 //mongoDB connection
@@ -71,6 +97,16 @@ async function run() {
     const usersCollection = database.collection("users");
     const flightsCollection = database.collection("flights");
     const bookingsCollection = database.collection("bookings");
+
+    // verifying admin middleware
+    const verifyAdmin = async (req, res, next) => {
+      const result = await usersCollection.findOne({ email: req?.user?.email });
+
+      if (!result || result?.role !== "admin")
+        return res.status(401).send({ message: "unauthorized access!!" });
+
+      next();
+    };
 
     //!-----------------auth api------------------
 
@@ -96,7 +132,6 @@ async function run() {
 
         //   creating user in db
         const result = await usersCollection.insertOne(user);
-        // delete result?.password
 
         res.status(201).send(result);
       } catch (error) {
@@ -111,6 +146,7 @@ async function run() {
         const query = { email };
 
         const existingUser = await usersCollection.findOne(query);
+
         if (!existingUser) {
           return res.status(404).send({ message: "Sorry!, User not found" });
         }
@@ -147,14 +183,18 @@ async function run() {
             sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
           })
           .status(200)
-          .send({ accessToken });
+          .send({
+            accessToken,
+            image: existingUser.image,
+            name: existingUser.name,
+          });
       } catch (error) {
         res.status(500).send({ message: "failed to fetch a user" });
       }
     });
 
     // logout
-    app.get("/api/logout", async (req, res) => {
+    app.post("/api/logout", async (req, res) => {
       try {
         res
           .clearCookie("refreshToken", {
@@ -174,7 +214,10 @@ async function run() {
       try {
         const { refreshToken } = req.cookies;
 
-        const decoded = jwt.verify(refreshToken, JWT_REFRESH_SECRET);
+        const decoded = jwt.verify(
+          refreshToken,
+          process.env.JWT_REFRESH_SECRET
+        );
         console.log(decoded);
         const { email } = decoded;
 
@@ -203,29 +246,86 @@ async function run() {
 
     //!-----------------flight api------------------
 
-    // get all flights from db
+    // get all flights from db with
     app.get("/api/flights", async (req, res) => {
       try {
-        const result = await flightsCollection.find().toArray();
+        const { page = 1, limit = 10 } = req.query;
 
-        res.status(200).send(result);
+        const filters = {
+          availableSeats: { $gt: 0 },
+        };
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const total = await flightsCollection.countDocuments(filters);
+
+        const flights = await flightsCollection
+          .find(filters)
+          .skip(skip)
+          .limit(parseInt(limit))
+          .toArray();
+
+        res.status(200).send({
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          flights,
+        });
       } catch (error) {
-        res.status(500).send({ message: "failed to fetch flight data" });
+        res.status(500).send({ message: "Failed to fetch flight data" });
       }
     });
 
-    //todo:filter & pagination
-    // get all flights by search from db
+    // get all flights by search from db with pagination
     app.get("/api/flights/search", async (req, res) => {
       try {
-        const { origin, destination, date } = req.query;
-        const result = await flightsCollection
-          .find({ origin, destination, date })
+        const {
+          origin,
+          destination,
+          date,
+          airline,
+          minPrice,
+          maxPrice,
+          minSeats,
+          page = 1,
+          limit = 10,
+        } = req.query;
+
+        const query = {
+          availableSeats: { $gt: 0 },
+        };
+
+        if (origin) query.origin = origin;
+        if (destination) query.destination = destination;
+        if (date) query.departureTime = { $regex: `^${date}` };
+        if (airline) query.airline = airline;
+
+        if (minPrice || maxPrice) {
+          query.price = {};
+          if (minPrice) query.price.$gte = Number(minPrice);
+          if (maxPrice) query.price.$lte = Number(maxPrice);
+        }
+
+        if (minSeats) {
+          query.availableSeats.$gte = Number(minSeats);
+        }
+
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+        const total = await flightsCollection.countDocuments(query);
+
+        const flights = await flightsCollection
+          .find(query)
+          .skip(skip)
+          .limit(parseInt(limit))
           .toArray();
 
-        res.status(200).send(result);
+        res.status(200).send({
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          flights,
+        });
       } catch (error) {
-        res.status(500).send({ message: "failed to fetch flight data" });
+        res.status(500).send({ message: "Failed to fetch flight data" });
       }
     });
 
@@ -315,35 +415,133 @@ async function run() {
 
     //!-----------------booking api------------------
 
-    // get all bookings from db
+    // get all bookings from db with pagination
     app.get("/api/bookings", verifyToken, verifyAdmin, async (req, res) => {
       try {
-        const result = await bookingsCollection.find().toArray();
+        const { page = 1, limit = 10 } = req.query;
 
-        res.status(200).send(result);
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const pipeline = [
+          {
+            $addFields: {
+              flightObjId: { $toObjectId: "$flightId" },
+              userObjId: { $toObjectId: "$user.userId" },
+            },
+          },
+          {
+            $lookup: {
+              from: "flights",
+              localField: "flightObjId",
+              foreignField: "_id",
+              as: "flightDetails",
+            },
+          },
+          { $unwind: "$flightDetails" },
+          {
+            $lookup: {
+              from: "users",
+              localField: "userObjId",
+              foreignField: "_id",
+              as: "userDetails",
+            },
+          },
+          { $unwind: "$userDetails" },
+          { $skip: skip },
+          { $limit: parseInt(limit) },
+        ];
+
+        const bookings = await bookingsCollection.aggregate(pipeline).toArray();
+        const total = await bookingsCollection.countDocuments();
+
+        res.send({
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          bookings,
+        });
       } catch (error) {
-        res.status(500).send({ message: "failed to fetch booking data" });
+        console.log(error);
+        res.status(500).send({ message: "Failed to fetch bookings" });
       }
     });
 
-    // get user specific bookings from db //todo
+    // get user specific bookings from db with pagination
     app.get("/api/bookings/user/:id", verifyToken, async (req, res) => {
       try {
         const { id } = req.params;
+        const { page = 1, limit = 10 } = req.query;
 
-        //todo: check
-        if (ObjectId.isValid(req?.user?.userId) !== ObjectId.isValid(id)) {
-          return res.status(403).send({ message: "forbidden access" });
+        if (req.user?.userId !== id) {
+          return res.status(403).json({ message: "Forbidden access" });
         }
-        const result = await bookingsCollection
-          .find({ _id: new ObjectId(id) })
-          .toArray();
 
-        res.status(200).send(result);
+        const skip = (parseInt(page) - 1) * parseInt(limit);
+
+        const pipeline = [
+          { $match: { "user.userId": id } },
+          {
+            $addFields: {
+              flightObjId: {
+                $convert: {
+                  input: "$flightId",
+                  to: "objectId",
+                  onError: null,
+                },
+              },
+            },
+          },
+          {
+            $lookup: {
+              from: "flights",
+              localField: "flightObjId",
+              foreignField: "_id",
+              as: "flightDetails",
+            },
+          },
+          {
+            $unwind: {
+              path: "$flightDetails",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $project: {
+              _id: 1,
+              flightId: 1,
+              user: 1,
+              numberOfSeats: 1,
+              totalPrice: 1,
+              status: 1,
+              timestamp: 1,
+              "flightDetails.airline": 1,
+              "flightDetails.flightNumber": 1,
+              "flightDetails.origin": 1,
+              "flightDetails.destination": 1,
+              "flightDetails.departureTime": 1,
+              "flightDetails.arrivalTime": 1,
+              "flightDetails.image": 1,
+            },
+          },
+          { $skip: skip },
+          { $limit: parseInt(limit) },
+        ];
+
+        const total = await bookingsCollection.countDocuments({
+          "user.userId": id,
+        });
+
+        const bookings = await bookingsCollection.aggregate(pipeline).toArray();
+
+        res.status(200).json({
+          total,
+          page: parseInt(page),
+          limit: parseInt(limit),
+          bookings,
+        });
       } catch (error) {
-        res
-          .status(500)
-          .send({ message: "failed to fetch specific booking data" });
+        console.error("Failed to fetch user bookings:", error);
+        res.status(500).json({ message: "Internal server error" });
       }
     });
 
@@ -351,10 +549,51 @@ async function run() {
     app.post("/api/bookings", verifyToken, async (req, res) => {
       try {
         const booking = req.body;
-        booking.status = false;
+        const reqUser = req?.user;
+        booking.status = "Pending";
         booking.timestamp = Date.now();
 
+        const { flightId, user } = booking;
+
+        const isFlightExist = await flightsCollection.findOne({
+          _id: new ObjectId(flightId),
+        });
+
+        if (!isFlightExist) {
+          return res.status(404).send({ message: "Sorry!, flight not found" });
+        }
+
+        const isUserExist = await usersCollection.findOne({
+          _id: new ObjectId(user?.userId),
+        });
+
+        if (!isUserExist) {
+          return res.status(404).send({ message: "Sorry!, user not found" });
+        }
+
+        if (isUserExist?.role !== reqUser?.role) {
+          return res.status(403).send({ message: "forbidden access!!" });
+        }
+
         const result = await bookingsCollection.insertOne(booking);
+
+        const availableSeats =
+          parseInt(isFlightExist.availableSeats) -
+          parseInt(booking.numberOfSeats);
+
+        await flightsCollection.updateOne(
+          {
+            _id: new ObjectId(flightId),
+          },
+          {
+            $set: { availableSeats },
+          }
+        );
+
+        sendEmail(isUserExist?.email, {
+          subject: "Booking Successful!",
+          message: `You've successfully booked a flight through ✈Flights. Please wait for admin confirmation`,
+        });
 
         res.status(201).send(result);
       } catch (error) {
@@ -362,20 +601,134 @@ async function run() {
       }
     });
 
-    // update user bookings by admin in db
-    app.put("/api/bookings/:id", verifyToken, verifyAdmin, async (req, res) => {
+    // update user bookings by admin in db and user can update with in 2hour
+    app.put("/api/bookings/:id", verifyToken, async (req, res) => {
       try {
         const { id } = req.params;
-        const status = req.body;
+        const { status: bookingStatus } = req.body;
+        const reqUser = req.user;
 
-        const result = await bookingsCollection.updateOne(
-          { _id: new ObjectId(id) },
-          { $set: { status, timestamp: Date.now() } }
-        );
+        const booking = await bookingsCollection.findOne({
+          _id: new ObjectId(id),
+        });
 
-        res.status(200).send(result);
+        if (!booking) {
+          return res.status(404).send({ message: "Booking not found" });
+        }
+
+        const flight = await flightsCollection.findOne({
+          _id: new ObjectId(booking.flightId),
+        });
+
+        if (!flight) {
+          return res
+            .status(404)
+            .send({ message: "Associated flight not found" });
+        }
+
+        const userData = await usersCollection.findOne({
+          _id: new ObjectId(booking.user.userId),
+        });
+
+        if (!userData) {
+          return res.status(404).send({ message: "User info not found" });
+        }
+
+        const isAdmin = reqUser.role === "admin";
+        const isUserMatch = booking.user.userId === reqUser.userId;
+
+        // admin approval
+        if (isAdmin) {
+          await bookingsCollection.updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { status: bookingStatus, timestamp: Date.now() } }
+          );
+
+          if (bookingStatus === "Cancel") {
+            await flightsCollection.updateOne(
+              { _id: new ObjectId(booking.flightId) },
+              {
+                $inc: {
+                  availableSeats: parseInt(booking.numberOfSeats),
+                },
+              }
+            );
+          }
+
+          const message =
+            bookingStatus === "Confirm"
+              ? `Dear ${
+                  userData.name || "User"
+                },\n\nYour booking request (ID: ${
+                  booking._id
+                }) has been *approved* by the admin.\n\nThank you for using ✈Flights.`
+              : `Dear ${userData.name || "User"},\n\nYour booking (ID: ${
+                  booking._id
+                }) has been *cancelled* by the admin.\n\nWe apologize for the inconvenience.`;
+
+          sendEmail(userData.email, {
+            subject: `Booking ${bookingStatus} Notification`,
+            message,
+          });
+
+          return res.status(200).send({
+            message: `Booking ${bookingStatus.toLowerCase()}ed by admin`,
+          });
+        }
+
+        // if user cancel within 2 hours
+        if (
+          bookingStatus === "Cancel" &&
+          isUserMatch &&
+          booking.status === "Pending"
+        ) {
+          const bookingTime = new Date(booking.timestamp);
+          const twoHoursPassed =
+            Date.now() - bookingTime.getTime() > 2 * 60 * 60 * 1000;
+
+          if (!twoHoursPassed) {
+            await bookingsCollection.updateOne(
+              { _id: new ObjectId(id) },
+              { $set: { status: "Cancel", timestamp: Date.now() } }
+            );
+
+            await flightsCollection.updateOne(
+              { _id: new ObjectId(booking.flightId) },
+              {
+                $inc: {
+                  availableSeats: parseInt(booking.numberOfSeats),
+                },
+              }
+            );
+
+            // email to user
+            sendEmail(userData.email, {
+              subject: "Booking Cancelled",
+              message: `Your booking (ID: ${booking._id}) has been successfully cancelled.`,
+            });
+
+            // email to admin
+            sendEmail("admin@example.com", {
+              subject: "Booking Cancelled by User",
+              message: `Booking (ID: ${booking._id}) was cancelled by the user (${userData.email}).`,
+            });
+
+            return res
+              .status(200)
+              .send({ message: "Booking cancelled by user" });
+          } else {
+            return res.status(400).send({
+              message: "You can only cancel within 2 hours of booking time",
+            });
+          }
+        }
+
+        return res
+          .status(403)
+          .send({ message: "Unauthorized to update booking" });
       } catch (error) {
-        res.status(500).send({ message: "failed to update booking data" });
+        console.error(error);
+        res.status(500).send({ message: "Failed to update booking data" });
       }
     });
 
