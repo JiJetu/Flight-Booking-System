@@ -1,14 +1,28 @@
+import { TFlight } from "../../../type";
 import { baseApi } from "../../api/baseApi";
 
 const flightApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getAllFlights: builder.query({
-      query: () => ({
-        url: "/flights",
+    getAllFlights: builder.query<
+      { total: number; flights: TFlight[] },
+      { page?: number; limit?: number }
+    >({
+      query: ({ page = 1, limit = 6 } = {}) => ({
+        url: `/flights?page=${page}&limit=${limit}`,
         method: "GET",
       }),
       providesTags: ["Flights"],
     }),
+    getSearchFlights: builder.query({
+      query: (params) => {
+        const query = new URLSearchParams(params).toString();
+        return {
+          url: `/flights/search?${query}`,
+          method: "GET",
+        };
+      },
+    }),
+
     getSingleFlight: builder.query({
       query: (id) => ({
         url: `/flights/${id}`,
@@ -48,4 +62,6 @@ export const {
   useAddFlightMutation,
   useDeleteFlightMutation,
   useUpdateFlightMutation,
+  useGetSearchFlightsQuery,
+  useLazyGetSearchFlightsQuery,
 } = flightApi;

@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import queryString from "query-string";
 import banner from "../../assets/images/banner.gif";
+import { flightLocations } from "../flightLocations/flightLocation";
 
 type TSearchFields = {
   origin: string;
@@ -43,14 +44,19 @@ const Hero = () => {
             className="grid grid-cols-1 sm:grid-cols-4 gap-2 max-w-4xl mx-auto text-left"
           >
             <div>
-              <input
+              <select
                 {...register("origin", { required: "Origin is required" })}
-                type="text"
-                placeholder="Origin"
                 className={`rounded px-4 py-2 w-full border ${
                   errors.origin ? "border-red-500" : "border-gray-300"
                 }`}
-              />
+              >
+                <option value="">Select Origin</option>
+                {flightLocations.map(({ city, country }) => (
+                  <option key={city} value={city}>
+                    {city}, {country}
+                  </option>
+                ))}
+              </select>
               {errors.origin && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.origin.message}
@@ -59,16 +65,21 @@ const Hero = () => {
             </div>
 
             <div>
-              <input
+              <select
                 {...register("destination", {
                   required: "Destination is required",
                 })}
-                type="text"
-                placeholder="Destination"
                 className={`rounded px-4 py-2 w-full border ${
                   errors.destination ? "border-red-500" : "border-gray-300"
                 }`}
-              />
+              >
+                <option value="">Select Destination</option>
+                {flightLocations.map(({ city, country }) => (
+                  <option key={city} value={city}>
+                    {city}, {country}
+                  </option>
+                ))}
+              </select>
               {errors.destination && (
                 <p className="text-red-500 text-sm mt-1">
                   {errors.destination.message}
@@ -80,9 +91,6 @@ const Hero = () => {
               <input
                 {...register("date", {
                   required: "Date is required",
-                  validate: (value) =>
-                    new Date(value) >= new Date() ||
-                    "Date cannot be in the past",
                 })}
                 type="date"
                 className={`rounded px-4 py-2 w-full border ${
