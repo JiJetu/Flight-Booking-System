@@ -91,7 +91,7 @@ const router = createBrowserRouter([
         ),
       },
       {
-        path: "my-listings",
+        path: "manage-flights",
         element: (
           <ProtectedRoute>
             <AdminRoute>

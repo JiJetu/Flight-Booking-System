@@ -100,7 +100,7 @@ const AddFlight = () => {
       setImagePreview(null);
       setImageText("Upload Image");
 
-      navigate("/dashboard/my-listings");
+      navigate("/dashboard/manage-flights");
     } catch (error) {
       toast.error("Failed to add flight", {
         id: toastId,

@@ -15,7 +15,7 @@ const AdminMenu = () => {
       <MenuItem
         icon={PiSquareHalfLight}
         label="My Listings"
-        address="my-listings"
+        address="manage-flights"
       />
       <MenuItem
         icon={MdOutlineManageHistory}
