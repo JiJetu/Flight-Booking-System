@@ -8,6 +8,24 @@ This project is organized into two folders:
 
 ---
 
+## 🔗 Live Links
+
+- **Frontend (Vercel):** [https://flight-booking-system-client-lemon.vercel.app/](https://flight-booking-system-client-lemon.vercel.app/)
+- **Backend (Vercel):** [https://flight-booking-system-server-delta.vercel.app/](https://flight-booking-system-server-delta.vercel.app/)
+
+---
+
+## 👤 Test Admin Credentials
+
+To access the **Admin Dashboard**, log in with:
+
+- **Email:** `admin@gmail.com`
+- **Password:** `123456`
+
+> You must use this account to test admin-specific routes like flight management and booking approvals.
+
+---
+
 ## 📦 Tech Stack
 
 **Frontend**
