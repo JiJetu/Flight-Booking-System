@@ -48,7 +48,7 @@ const flightApi = baseApi.injectEndpoints({
     updateFlight: builder.mutation({
       query: ({ id, flightData }) => ({
         url: `/flights/${id}`,
-        method: "PATCH",
+        method: "PUT",
         body: flightData,
       }),
       invalidatesTags: ["Flights"],

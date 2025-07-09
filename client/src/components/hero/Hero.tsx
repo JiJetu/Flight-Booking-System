@@ -52,7 +52,7 @@ const Hero = () => {
               >
                 <option value="">Select Origin</option>
                 {flightLocations.map(({ city, country }) => (
-                  <option key={city} value={city}>
+                  <option key={city} value={`${city}, ${country}`}>
                     {city}, {country}
                   </option>
                 ))}
@@ -75,7 +75,7 @@ const Hero = () => {
               >
                 <option value="">Select Destination</option>
                 {flightLocations.map(({ city, country }) => (
-                  <option key={city} value={city}>
+                  <option key={city} value={`${city}, ${country}`}>
                     {city}, {country}
                   </option>
                 ))}

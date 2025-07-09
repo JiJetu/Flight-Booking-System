@@ -23,6 +23,7 @@ const ManageBookings = () => {
   const [isOpen, setIsOpen] = useState(false);
 
   const bookings = data?.bookings || [];
+  console.log(bookings);
   const totalPages = Math.ceil((data?.total || 0) / limit);
 
   const handleDelete = async (id: string) => {
@@ -98,19 +99,33 @@ const ManageBookings = () => {
 
                       <td className="px-5 py-5 border-b bg-white text-sm">
                         <p className="font-medium">
-                          {booking.flightDetails?.airline || "N/A"}
+                          {booking.flightId?.airline || "N/A"}
                         </p>
                         <p className="text-xs text-gray-500">
-                          #{booking.flightDetails?.flightNumber}
+                          #{booking.flightId?.flightNumber}
                         </p>
                       </td>
 
                       <td className="px-5 py-5 border-b bg-white text-sm">
                         <p className="font-medium">
-                          {booking.userDetails?.name || "N/A"}
+                          {(typeof booking.user.userId === "object" &&
+                            (
+                              booking.user.userId as {
+                                name: string;
+                                email: string;
+                              }
+                            ).name) ||
+                            "N/A"}
                         </p>
                         <p className="text-xs text-gray-500">
-                          {booking.userDetails?.email || "N/A"}
+                          {(typeof booking.user.userId === "object" &&
+                            (
+                              booking.user.userId as {
+                                name: string;
+                                email: string;
+                              }
+                            ).name) ||
+                            "N/A"}
                         </p>
                       </td>
 

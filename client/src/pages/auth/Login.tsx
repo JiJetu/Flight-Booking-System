@@ -51,7 +51,7 @@ const Login = () => {
       user.role === "admin"
         ? navigate("/dashboard")
         : navigate(from, { replace: true });
-    } catch (err) {
+    } catch (error) {
       toast.error("Something went wrong", { id: toastId, duration: 2000 });
     }
   };

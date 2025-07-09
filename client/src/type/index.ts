@@ -26,20 +26,22 @@ export type TFlightFormInputs = {
 
 export type TBooking = {
   _id: string;
-  flightId: string;
   user: {
-    userId: string;
+    userId:
+      | string
+      | {
+          name: string;
+          email: string;
+        };
+  };
+  flightId: TFlight & {
+    updatedAt: string;
   };
   numberOfSeats: number;
   totalPrice: number;
   status: "Pending" | "Confirm" | "Cancel";
-  timestamp: number;
-  flightDetails?: {
-    airline: string;
-    flightNumber: string;
-  };
-  userDetails?: {
-    name: string;
-    email: string;
-  };
+  timestamp: string;
+  createdAt: string;
+  updatedAt: string;
+  __v?: number;
 };

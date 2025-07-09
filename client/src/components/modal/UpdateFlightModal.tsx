@@ -8,21 +8,21 @@ import { Fragment, useState } from "react";
 import { useForm } from "react-hook-form";
 import { imageUpload } from "../../utils/createImageUrl";
 import { toast } from "sonner";
-import AddFlightForm from "../form/FlightForm";
+import FlightForm from "../form/FlightForm";
 import { TFlight, TFlightFormInputs } from "../../type";
 import { useUpdateFlightMutation } from "../../redux/features/flights/flightApi";
 
-interface UpdateFlightModalProps {
+type TUpdateFlightModalProps = {
   isOpen: boolean;
   closeModal: () => void;
   flight: TFlight;
-}
+};
 
 const UpdateFlightModal = ({
   isOpen,
   closeModal,
   flight,
-}: UpdateFlightModalProps) => {
+}: TUpdateFlightModalProps) => {
   const [updateFlight, { isLoading }] = useUpdateFlightMutation();
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(flight.image);
@@ -98,7 +98,12 @@ const UpdateFlightModal = ({
         image: imageUrl,
       };
 
-      await updateFlight({ id: flight._id, data: updatedData });
+      const res = await updateFlight({
+        id: flight._id,
+        flightData: updatedData,
+      });
+
+      console.log(res);
 
       toast.success("Flight updated successfully!", {
         id: toastId,
@@ -142,7 +147,7 @@ const UpdateFlightModal = ({
             >
               <DialogPanel className="w-full max-w-2xl transform overflow-hidden rounded-2xl bg-white dark:bg-black p-6 text-left align-middle shadow-xl transition-all">
                 <div className="mt-2 w-full">
-                  <AddFlightForm
+                  <FlightForm
                     onSubmit={onSubmit}
                     handleSubmit={handleSubmit}
                     register={register}

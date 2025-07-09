@@ -1,7 +1,7 @@
 type THeadingProps = {
   title: string;
   subtitle?: string;
-  center: boolean;
+  center?: boolean;
 };
 
 const Heading = ({ title, subtitle, center }: THeadingProps) => {

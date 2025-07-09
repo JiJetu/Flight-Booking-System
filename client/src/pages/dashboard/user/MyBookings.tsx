@@ -10,13 +10,14 @@ import { TBooking } from "../../../type";
 import Loading from "../../../components/shared/loading/Loading";
 import { toast } from "sonner";
 import Pagination from "../../../components/shared/pagination/Pagination";
+import Heading from "../../../components/shared/heading/Heading";
 
 const MyBookings = () => {
   const user = useAppSelector(currentUser);
   const [page, setPage] = useState(1);
   const limit = 5;
 
-  const { data, isLoading } = useGetMyBookingsQuery({
+  const { data, isLoading, error } = useGetMyBookingsQuery({
     id: user?.userId,
     page,
     limit,
@@ -24,6 +25,7 @@ const MyBookings = () => {
   const [updateBookingStatus] = useUpdateBookingStatusMutation();
 
   const bookings = data?.bookings || [];
+  console.log(bookings, { error });
   const totalPages = Math.ceil((data?.total || 0) / limit);
 
   const handleCancel = async (id: string) => {
@@ -48,32 +50,36 @@ const MyBookings = () => {
         <h1 className="text-2xl font-semibold mb-6">My Bookings</h1>
 
         {bookings.length === 0 ? (
-          <p className="text-gray-600">No bookings found.</p>
+          <div className="text-black">
+            <Heading title="No bookings found." />
+          </div>
         ) : (
           <div className="overflow-x-auto bg-white shadow-md rounded-lg">
-            <table className="min-w-full divide-y divide-gray-200 text-sm">
+            <table className="min-w-full divide-y divide-gray-200 text-sm text-center">
               <thead className="bg-gray-50 text-gray-700 uppercase text-left">
                 <tr>
                   <th className="px-6 py-3">Flight</th>
-                  <th className="px-6 py-3">Seats</th>
-                  <th className="px-6 py-3">Price</th>
-                  <th className="px-6 py-3">Status</th>
+                  <th className="px-6 py-3 text-center">Seats</th>
+                  <th className="px-6 py-3 text-center">Price</th>
+                  <th className="px-6 py-3 text-center">Status</th>
                   <th className="px-6 py-3 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {bookings.map((booking: TBooking) => (
                   <tr key={booking._id} className="hover:bg-gray-50 text-black">
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 flex-1 text-start">
                       <div className="font-medium">
-                        {booking.flightDetails?.airline || "N/A"}
+                        {booking.flightId?.airline || "N/A"}
                       </div>
                       <div className="text-xs text-gray-500">
-                        #{booking.flightDetails?.flightNumber || "N/A"}
+                        #{booking.flightId?.flightNumber || "N/A"}
                       </div>
                     </td>
-                    <td className="px-6 py-4">{booking.numberOfSeats}</td>
-                    <td className="px-6 py-4">${booking.totalPrice}</td>
+                    <td className="px-6 py-4 flex-1">
+                      {booking.numberOfSeats}
+                    </td>
+                    <td className="px-6 py-4 flex-1">${booking.totalPrice}</td>
                     <td className="px-6 py-4">
                       <span
                         className={`inline-block px-3 py-1 text-xs font-semibold rounded-full text-white ${

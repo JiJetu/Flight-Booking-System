@@ -21,7 +21,7 @@ type TAddFlightFormProps = {
   imageText: string;
   isUpdate?: boolean;
 };
-const AddFlightForm = ({
+const FlightForm = ({
   onSubmit,
   handleSubmit,
   register,
@@ -142,7 +142,9 @@ const AddFlightForm = ({
               <div className="w-full text-center border-2 border-dotted border-gray-300 rounded-md p-3">
                 <label>
                   <input
-                    {...register("image", { required: "Image is required" })}
+                    {...register("image", {
+                      required: !isUpdate ? "Image is required" : false,
+                    })}
                     className="hidden"
                     type="file"
                     accept="image/*"
@@ -231,4 +233,4 @@ const AddFlightForm = ({
   );
 };
 
-export default AddFlightForm;
+export default FlightForm;

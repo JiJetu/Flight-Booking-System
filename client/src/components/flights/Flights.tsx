@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import FlightFilterBar from "./FlightFilterBar";
 import FlightCard from "./FlightCard";
 import Loading from "../shared/loading/Loading";
@@ -10,12 +10,14 @@ import {
 import { calculatePagination } from "../../utils/calculatePagination";
 import { TFlight } from "../../type";
 import Pagination from "../shared/pagination/Pagination";
+import { useSearchParams } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 6;
 
 const Flights = () => {
   const [filters, setFilters] = useState<Record<string, string | number>>({});
   const [page, setPage] = useState(1);
+  const [searchParams] = useSearchParams();
 
   const { data: allData, isLoading: loadingAll } = useGetAllFlightsQuery(
     { page, limit: ITEMS_PER_PAGE },
@@ -30,6 +32,24 @@ const Flights = () => {
   const pages = calculatePagination(total, ITEMS_PER_PAGE);
 
   const isLoading = loadingAll || loadingSearch;
+
+  // extract query params on first load
+  useEffect(() => {
+    const query: Record<string, string> = {};
+    for (const [key, value] of searchParams.entries()) {
+      query[key] = value;
+    }
+
+    if (Object.keys(query).length > 0) {
+      const searchFilters: Record<string, string | number> = {
+        ...query,
+        page: 1,
+        limit: ITEMS_PER_PAGE,
+      };
+      setFilters(query);
+      triggerSearch(searchFilters);
+    }
+  }, [searchParams, triggerSearch]);
 
   const handleFilter = (filters: Record<string, string | number>) => {
     console.log("FILTERS SENT TO SEARCH:", filters);

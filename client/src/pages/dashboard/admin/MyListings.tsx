@@ -9,7 +9,7 @@ import FlightDataRow from "../../../components/tableRow/FlightDataRow";
 import { useState } from "react";
 import Pagination from "../../../components/shared/pagination/Pagination";
 
-const ITEMS_PER_PAGE = 5;
+const ITEMS_PER_PAGE = 1;
 
 const MyListings = () => {
   const [page, setPage] = useState(1);

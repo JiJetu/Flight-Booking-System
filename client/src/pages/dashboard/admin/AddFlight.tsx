@@ -4,7 +4,7 @@ import { useAddFlightMutation } from "../../../redux/features/flights/flightApi"
 import { TFlightFormInputs } from "../../../type";
 import { toast } from "sonner";
 import { imageUpload } from "../../../utils/createImageUrl";
-import AddFlightForm from "../../../components/form/FlightForm";
+import FlightForm from "../../../components/form/FlightForm";
 import { Helmet } from "react-helmet-async";
 import Heading from "../../../components/shared/heading/Heading";
 import { useForm } from "react-hook-form";
@@ -119,7 +119,7 @@ const AddFlight = () => {
         <Heading title="Add New Flight" center />
       </div>
 
-      <AddFlightForm
+      <FlightForm
         onSubmit={onSubmit}
         handleSubmit={handleSubmit}
         register={register}
