@@ -100,13 +100,14 @@ exports.updateBooking = async (req, res) => {
   try {
     const { id } = req.params;
     const { status } = req.body;
+    console.log(id);
     const booking = await Booking.findById(id);
     const user = await User.findById(booking.user.userId);
 
     if (!booking) return res.status(404).json({ message: "Booking not found" });
 
     const isAdmin = req.user.role === "admin";
-    const isUserMatch = req.user.userId === booking.user.userId;
+    const isUserMatch = String(req.user.userId) === String(booking.user.userId);
 
     const twoHoursPassed =
       Date.now() - new Date(booking.timestamp).getTime() > 2 * 60 * 60 * 1000;

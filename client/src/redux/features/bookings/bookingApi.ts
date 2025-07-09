@@ -24,7 +24,7 @@ const bookingApi = baseApi.injectEndpoints({
         method: "POST",
         body: bookingInfo,
       }),
-      invalidatesTags: ["Bookings"],
+      invalidatesTags: ["Bookings", "Flights"],
     }),
     updateBookingStatus: builder.mutation({
       query: ({ id, status }: { id: string; status: string }) => ({
@@ -32,14 +32,14 @@ const bookingApi = baseApi.injectEndpoints({
         method: "PUT",
         body: { status },
       }),
-      invalidatesTags: ["Bookings"],
+      invalidatesTags: ["Bookings", "Flights"],
     }),
     deleteBookingS: builder.mutation({
       query: (id) => ({
         url: `/bookings/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["Bookings"],
+      invalidatesTags: ["Bookings", "Flights"],
     }),
   }),
 });

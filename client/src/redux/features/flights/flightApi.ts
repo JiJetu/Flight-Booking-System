@@ -21,6 +21,7 @@ const flightApi = baseApi.injectEndpoints({
           method: "GET",
         };
       },
+      providesTags: ["Flights"],
     }),
 
     getSingleFlight: builder.query({

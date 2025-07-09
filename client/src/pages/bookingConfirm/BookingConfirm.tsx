@@ -19,6 +19,7 @@ const BookingConfirm = () => {
   const bookingFlight = useAppSelector(currentFlightBooking);
   const user = useAppSelector(currentUser);
   const [bookAFlight, { isLoading }] = useBookAFlightMutation();
+
   const {
     register,
     handleSubmit,
@@ -56,9 +57,7 @@ const BookingConfirm = () => {
     try {
       const res = await bookAFlight(finalBooking);
 
-      console.log(res);
-
-      toast.success("Please! Wait for Admin Approver", {
+      toast.success(res?.data?.message || "Please! Wait for Admin Approver", {
         id: toastId,
         duration: 2000,
       });

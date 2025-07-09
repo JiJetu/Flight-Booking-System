@@ -17,7 +17,7 @@ const MyBookings = () => {
   const [page, setPage] = useState(1);
   const limit = 5;
 
-  const { data, isLoading, error } = useGetMyBookingsQuery({
+  const { data, isLoading } = useGetMyBookingsQuery({
     id: user?.userId,
     page,
     limit,
@@ -25,14 +25,13 @@ const MyBookings = () => {
   const [updateBookingStatus] = useUpdateBookingStatusMutation();
 
   const bookings = data?.bookings || [];
-  console.log(bookings, { error });
   const totalPages = Math.ceil((data?.total || 0) / limit);
 
   const handleCancel = async (id: string) => {
     const toastId = toast.loading("Cancelling booking...");
     try {
-      await updateBookingStatus({ id, status: "Cancel" });
-      toast.success("Booking cancelled", { id: toastId });
+      const res = await updateBookingStatus({ id, status: "Cancel" });
+      toast.success(res?.data?.message || "Booking cancelled", { id: toastId });
     } catch (error) {
       toast.error("Failed to cancel booking", { id: toastId });
     }

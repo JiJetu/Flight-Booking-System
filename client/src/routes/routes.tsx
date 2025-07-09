@@ -16,11 +16,13 @@ import ManageBookings from "../pages/dashboard/admin/ManageBookings";
 import MyListings from "../pages/dashboard/admin/MyListings";
 import ManageUsers from "../pages/dashboard/admin/ManageUsers";
 import Profile from "../pages/dashboard/profile/Profile";
+import Error404 from "../pages/error/Error404";
 
 const router = createBrowserRouter([
   {
     path: "/",
     element: <MainLayout />,
+    errorElement: <Error404 />,
     children: [
       {
         index: true,

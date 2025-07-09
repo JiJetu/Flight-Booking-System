@@ -16,7 +16,7 @@ const ManageBookings = () => {
   const [page, setPage] = useState(1);
   const limit = 5;
 
-  const { data, isLoading } = useGetAllBookingsQuery({ page, limit });
+  const { data, isLoading, refetch } = useGetAllBookingsQuery({ page, limit });
   const [deleteBooking] = useDeleteBookingSMutation();
   const [updateBookingStatus] = useUpdateBookingStatusMutation();
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -46,6 +46,7 @@ const ManageBookings = () => {
       toast.success(`Booking ${newStatus.toLowerCase()}ed successfully`, {
         id: toastId,
       });
+      refetch();
     } catch (error) {
       toast.error("Failed to update status", { id: toastId });
     }
