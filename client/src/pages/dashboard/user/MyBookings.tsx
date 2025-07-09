@@ -66,7 +66,15 @@ const MyBookings = () => {
               </thead>
               <tbody className="divide-y divide-gray-200">
                 {bookings.map((booking: TBooking) => (
-                  <tr key={booking._id} className="hover:bg-gray-50 text-black">
+                  <tr
+                    key={booking._id}
+                    title={
+                      booking.status === "Pending"
+                        ? "Booking can be cancelled within 2 hours"
+                        : undefined
+                    }
+                    className="hover:bg-gray-50 text-black"
+                  >
                     <td className="px-6 py-4 flex-1 text-start">
                       <div className="font-medium">
                         {booking.flightId?.airline || "N/A"}

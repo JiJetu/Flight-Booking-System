@@ -54,7 +54,7 @@ const Registration = () => {
         });
         return navigate("/login");
       }
-      toast.success("User created successfully", {
+      toast.success(res?.data?.message || "User created successfully", {
         id: toastId,
         duration: 2000,
       });

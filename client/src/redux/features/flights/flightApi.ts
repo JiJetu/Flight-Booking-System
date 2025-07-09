@@ -5,10 +5,10 @@ const flightApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getAllFlights: builder.query<
       { total: number; flights: TFlight[] },
-      { page?: number; limit?: number }
+      { page?: number; limit?: number; availableFlights?: boolean }
     >({
-      query: ({ page = 1, limit = 6 } = {}) => ({
-        url: `/flights?page=${page}&limit=${limit}`,
+      query: ({ page = 1, limit = 6, availableFlights = true } = {}) => ({
+        url: `/flights?page=${page}&limit=${limit}&availableFlights=${availableFlights}`,
         method: "GET",
       }),
       providesTags: ["Flights"],

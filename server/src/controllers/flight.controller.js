@@ -14,10 +14,13 @@ exports.createFlight = async (req, res) => {
 // Get All Flights with Pagination
 exports.getAllFlights = async (req, res) => {
   try {
-    const { page = 1, limit = 10 } = req.query;
+    const { page = 1, limit = 10, availableFlights = true } = req.query;
+
     const skip = (parseInt(page) - 1) * parseInt(limit);
 
-    const query = { availableSeats: { $gt: 0 } };
+    let query = {};
+    if (availableFlights) query = { availableSeats: { $gt: 0 } };
+
     const total = await Flight.countDocuments(query);
     const flights = await Flight.find(query).skip(skip).limit(Number(limit));
 
